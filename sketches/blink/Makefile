@@ -1,6 +1,6 @@
 DEV := ARDUINO_AVR_PRO
-NAME=shrc04
-OBJ=shrc04.o
+NAME=blink
+OBJ=blink.o
 
 INCLUDE=../../include
 PCONF=../../avrdude.conf
