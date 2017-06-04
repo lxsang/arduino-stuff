@@ -1,6 +1,6 @@
 DEV := ARDUINO_AVR_PRO
-NAME=drone
-OBJ=drone.o 
+NAME=spi_arduino
+OBJ=spi_arduino.o ../../lib/SPI/SPI.o
 
 INCLUDE=../../include
 PCONF=../../avrdude.conf
@@ -31,11 +31,15 @@ all:$(OBJ)
 	avr-gcc -w -Os -Wl,--gc-sections -mmcu=$(MCU) -o $(NAME).elf $(OBJ) $(CORE) -L./ -lm 
 	avr-objcopy -O ihex -j .eeprom --set-section-flags=.eeprom=alloc,load --no-change-warnings --change-section-lma .eeprom=0 $(NAME).elf $(NAME).eep 
 	avr-objcopy -O ihex -R .eeprom $(NAME).elf $(NAME).hex
-
+rpi:
+	gcc rpi_spi.c -o spi_test
+rpi1:
+	gcc rpi_spi01.c -o spi_test_1
 program:
 	avrdude -C$(PCONF) -v -p$(MCU) -carduino -P$(SERIAL) -b$(BR) -D -Uflash:w:$(NAME).hex:i
 clean:
 	rm *.hex *.o *.elf *.eep *.d
+
 
 
 

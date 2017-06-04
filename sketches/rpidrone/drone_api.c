@@ -27,9 +27,9 @@ int main(int arc, const char** argv)
 		return;
 	}
 	
-
-//while(1)
-//{
+int i=0;
+while(i < 100)
+{
 	
 	//----- WRITE BYTES -----
 	buffer[0] = 'r';
@@ -48,14 +48,17 @@ int main(int arc, const char** argv)
 	//read() returns the number of bytes actually read, if it doesn't match then an error occurred (e.g. no response from the device)
 	{
 		//ERROR HANDLING: i2c transaction failed
-		printf("No data the i2c bus, retrying...\n");
+		//printf("No data the i2c bus, retrying...\n");
 	}
 	//else
 	//{
 	printf("Data IR: %d\n", buffer[1]);
 	printf("SONAR: %d\n",buffer[2]);
 	//}
-//}
+
+    i++;
 }
+}
+
 
 
