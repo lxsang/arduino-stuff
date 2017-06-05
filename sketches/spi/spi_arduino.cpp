@@ -7,10 +7,12 @@
  */
 
 #include "../../lib/SPI/SPI.h"
-#define BUFF_SIZE 20
-char buf [BUFF_SIZE];
-volatile byte pos;
-volatile boolean process_it;
+#define CMD_SIZE 5 
+#define RES_SIZE 10
+// command buffer 
+byte cmd_buf [CMD_SIZE];
+// response buffer
+byte res_buf [RES_SIZE];
 
 void setup (void)
 {
@@ -19,71 +21,90 @@ void setup (void)
   // have to send on master in, *slave out*
   pinMode(MISO, OUTPUT);
   // turn on SPI in slave mode
-  
-  // get ready for an interrupt 
-  pos = 0;   // buffer empty
-  process_it = false;
-
+ Serial.println("Finish setup");
   // disable
   //SPI.attachInterrupt();
 
 }  // end of setup
 
-/*
-// SPI interrupt routine
-ISR (SPI_STC_vect)
+void reset_buffer()
 {
-byte c = SPDR;  // grab byte from SPI Data Register
-  // add to buffer if room
-  if (pos < BUFF_SIZE)
+    int i =0;
+    for(i=0;i< CMD_SIZE;i++)
+        cmd_buf[i]=0;
+    for(i=0;i< RES_SIZE;i++)
+        res_buf[i]=0;
+}
+void read_cmd()
+{
+    // readin 5 bytes
+    int i = 0;
+    for(i=0; i < CMD_SIZE; i++)
     {
-    buf [pos++] = c;
-    Serial.print(c);
-    Serial.print(" ");
-    //SPDR = 'F';
-    //while(!(SPSR & (1<<SPIF))); // send back data
-    // example: newline means time to process buffer
-    if (c == '\n')
-      process_it = true;
-      
-    }  // end of room available
-}  // end of interrupt routine SPI_STC_vect*/
+        while(!(SPSR & (1<<SPIF)));    
+        byte c = SPDR;
+        cmd_buf[i] = c;
+    }
+}
 
-void response()
+void read_sensors()
 {
-    buf[0] = 'A';
-    buf[1] = 'R';
-    buf[2] = 'D';
-    buf[3] = 'U';
-    buf[4] = 'I';
-    buf[5] = 'N';
-    buf[6] = 'O';
-    buf[7] = ' ';
-    buf[8] = 'R';
-    buf[9] = 'E';
-    buf[10] = 'S';
+    Serial.println("reading sensor datas:");
+    res_buf[0] = 0xFE;
+    res_buf[1] = 347 & 0xFF;
+    res_buf[2] = (347 >> 8) & 0xFF;
+    res_buf[3] = 132 & 0xFF;
+    res_buf[4] = (132 >> 8) & 0xFF;
+    res_buf[5] = 520 & 0xFF;
+    res_buf[6] = (520 >> 8) & 0xFF;
+    res_buf[7] = 200;
+    res_buf[8] = 255;
+    res_buf[9] = 0xFF;
     
-    SPI.transfer(buf,11);
+    SPI.transfer(res_buf,RES_SIZE);
+}
+
+void set_actuators()
+{
+    Serial.println("Setting actuators:");
+    Serial.print("Status 1:");
+    Serial.println(cmd_buf[1]);
+    
+    Serial.print("Speed 1:");
+    Serial.println(cmd_buf[2]);
+    
+    Serial.print("Status 2:");
+    Serial.println(cmd_buf[3]);
+    
+    Serial.print("Speed 2:");
+    Serial.println(cmd_buf[4]);
+}
+
+void process_cmd()
+{
+    byte status = cmd_buf[0];
+    switch(status){
+        case 0xF1: // read sensor
+            read_sensors();
+            break;
+        case 0xF2: // set actuator
+            set_actuators();
+            break;
+        default:
+            // do nothing
+            Serial.print("Invalid command:");
+            Serial.println(status);
+    }
 }
 
 // main loop - wait for flag set in interrupt routine
 void loop (void)
 {
-    while(!(SPSR & (1<<SPIF)));    
-    byte c = SPDR;
-    buf[pos++] = c;
-    if (c == '\n')
-      process_it = true;
-    if (process_it)
-    {
-        buf [pos] = 0;  
-        Serial.println (buf);
-        pos = 0;
-        process_it = false;
-        response();
-    }  // end of flag set
-    
+    reset_buffer();
+    read_cmd();
+    process_cmd();
 }  // end of loop
+
 
 
 

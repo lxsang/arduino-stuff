@@ -8,6 +8,8 @@
 #include <linux/spi/spidev.h>
 
 #include <sys/ioctl.h>
+#define CMD_SIZE 5 
+#define RES_SIZE 10
 
 int main(int argc, char *argv[])
 {
@@ -17,12 +19,7 @@ int main(int argc, char *argv[])
         unsigned char byte;
 
         unsigned int speed = 250000;
-        char tx[] = {
-            0x48, 0x45, 0x4C, 0x4C, 0x4F,
-            0x20, 
-            0x57, 0x4F, 0x52, 0x4C, 0x44,
-            0x0A
-	    };
+        char tx[CMD_SIZE];
         if (argc != 3) {
                 fprintf(stderr, "usage: %s <spi-port> <spi-speed>\n", argv[0]);
                 exit(EXIT_FAILURE);
@@ -41,21 +38,43 @@ int main(int argc, char *argv[])
                 perror("ioctl");
                 exit(EXIT_FAILURE);
         }
+        
+        // request sensor data
+        tx[0] = 0xF1;
         int i=0;
-       if (write(fd_spi, tx, 12) == -1) {
-            perror("write");
-            exit(EXIT_FAILURE);
-        }
+       for(i=0; i < CMD_SIZE;i++)
+            if (write(fd_spi, tx+i, 1) == -1) {
+                perror("write");
+                exit(EXIT_FAILURE);
+            }
         // read back respond
         printf("Read back data\n");
-        char b;
-        for(i=0; i< 11; i++)
+        // ten milli section
+        nanosleep((const struct timespec[]){{0, 10000000L}}, NULL);
+        char b[RES_SIZE];
+        for(i=0; i< RES_SIZE; i++)
         {
-            read(fd_spi, & b, 1);
-            fprintf(stdout, "%c", b);
+            read(fd_spi, b+i, 1);
+             printf("%.2X ", b[i]);
         }
-        printf("\n");
+        printf("\n%.2X ", b[0]);
+        printf("%d ", (int)b[1] | (int)(b[2] << 8));
+        printf("%d ", (int)b[3] | (int)(b[4] << 8));
+        printf("%d ", (int)b[5] | (int)(b[6] << 8));
+        printf("%d ", b[7]);
+        printf("%d \n", b[8]);
+        // set actuator
+        tx[0] = 0xF2;
+        tx[1] = 3;
+        tx[2] = 100;
+        tx[3] = 3;
+        tx[4] = 100;
         
+        for(i=0; i < CMD_SIZE;i++)
+            if (write(fd_spi, tx+i, 1) == -1) {
+                perror("write");
+                exit(EXIT_FAILURE);
+            }
         /*char rx[12];
         if(read(fd_spi, rx, 11) == -1)
         {
@@ -85,5 +104,8 @@ int main(int argc, char *argv[])
         close(fd_spi);
         return EXIT_SUCCESS;
 }
+
+
+
 
 

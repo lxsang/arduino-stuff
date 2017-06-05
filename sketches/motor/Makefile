@@ -1,6 +1,6 @@
 DEV := ARDUINO_AVR_PRO
-NAME=drone
-OBJ=drone.o ../../lib/SPI/SPI.o ../../lib/Motor/Motor.o
+NAME=motor
+OBJ=motor.o ../../lib/Motor/Motor.o
 
 INCLUDE=../../include
 PCONF=../../avrdude.conf
