@@ -38,17 +38,17 @@ int main(int argc, char *argv[])
                 perror("ioctl");
                 exit(EXIT_FAILURE);
         }
-        
-        // request sensor data
-        tx[0] = 0xF1;
         int i=0;
+       /* // request sensor data
+        tx[0] = 0xF1;
+        
        for(i=0; i < CMD_SIZE;i++)
             if (write(fd_spi, tx+i, 1) == -1) {
                 perror("write");
                 exit(EXIT_FAILURE);
             }
         // read back respond
-        printf("Read back data\n");
+        //printf("Read back data\n");
         // ten milli section
         nanosleep((const struct timespec[]){{0, 10000000L}}, NULL);
         char b[RES_SIZE];
@@ -62,12 +62,12 @@ int main(int argc, char *argv[])
         printf("%d ", (int)b[3] | (int)(b[4] << 8));
         printf("%d ", (int)b[5] | (int)(b[6] << 8));
         printf("%d ", b[7]);
-        printf("%d \n", b[8]);
+        printf("%d \n", b[8]);*/
         // set actuator
         tx[0] = 0xF2;
-        tx[1] = 3;
+        tx[1] = 1;
         tx[2] = 100;
-        tx[3] = 3;
+        tx[3] = 1;
         tx[4] = 100;
         
         for(i=0; i < CMD_SIZE;i++)
