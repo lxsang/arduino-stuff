@@ -1,6 +1,6 @@
 DEV := ARDUINO_AVR_PRO
 NAME=spi_arduino
-OBJ=spi_arduino.o ../../lib/SPI/SPI.o
+OBJ=spi_arduino1.o ../../lib/SPI/SPI.o ../../lib/Motor/Motor.o
 
 INCLUDE=../../include
 PCONF=../../avrdude.conf
@@ -35,6 +35,8 @@ rpi:
 	gcc rpi_spi.c -o spi_test
 rpi1:
 	gcc rpi_spi01.c -o spi_test_1
+rpi2:
+	gcc spi2_rpi.c -o spi_test_1
 program:
 	avrdude -C$(PCONF) -v -p$(MCU) -carduino -P$(SERIAL) -b$(BR) -D -Uflash:w:$(NAME).hex:i
 clean:

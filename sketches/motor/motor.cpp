@@ -10,8 +10,31 @@
 Motor left_motor(M1_D1,M1_D2, M1_S);
 Motor right_motor(M2_D1,M2_D2,M2_S);
 int speed = 150;
+// sonar
+#define S_TRIG A1
+#define S_ECHO A0
+
+// motor
+long sonar_read()
+{
+    long duration, distance;
+    digitalWrite(S_TRIG, LOW);  
+    delayMicroseconds(2); 
+    digitalWrite(S_TRIG, HIGH);
+    //  delayMicroseconds(1000); 
+    delayMicroseconds(10); 
+    digitalWrite(S_TRIG, LOW);
+    duration = pulseIn(S_ECHO, HIGH);
+    distance = (duration/2) / 29.1;
+    //delay(50);
+    return distance;
+}
+
 void setup (void)
 {
+    // setup sonar sensor
+    pinMode(S_TRIG, OUTPUT);
+    pinMode(S_ECHO,INPUT);
     Serial.begin (9600);   // debugging
     left_motor.init();
     right_motor.init();
@@ -50,6 +73,10 @@ void stop()
 }
 // main loop - wait for flag set in interrupt routine
 void loop() {
+    long distance = sonar_read();
+     Serial.print("sonar:");
+    Serial.println(distance);
+    
   if(Serial.available())
   {
     
