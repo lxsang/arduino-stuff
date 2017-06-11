@@ -98,37 +98,6 @@ long sonar_read()
     return distance;
 }
 
-void motor_driven(Motor* m,byte stat, int speed)
-{
-    if(speed > 0)
-        m->setSpeed(speed);
-    switch(stat)
-    {
-        case 1: // go forward
-            m->forward();
-            //Serial.println("Go forward");
-            break;
-        case 2: // go backward
-            //Serial.println("Go backward");
-            m->backward();
-            break;
-        case 3: // stop
-            //Serial.println("STOP");
-            m->stop();
-            break;
-        default:;
-    }
-}
-
-void set_actuators()
-{
-    byte m1_status = data_buffer[S_ML];
-    byte m2_status = data_buffer[S_MR];
-    int speed1 = (int) data_buffer[S_MLS];
-    int speed2 = (int) data_buffer[S_MRS];
-    motor_driven(&left_motor,m1_status,speed1);
-    motor_driven(&right_motor,m2_status,speed2);
-}
 // SPI interrupt routine
 ISR (SPI_STC_vect)
 {
@@ -181,7 +150,12 @@ void loop (void)
     data_buffer[S_SONAR_L] = distance & 0xFF;//low bytes
     data_buffer[S_SONAR_H] = (distance >> 8) & 0xFF;
     
-    set_actuators();
+    // actualtor driven 
+    left_motor.setSpeed((int)data_buffer[S_MLS]);
+    right_motor.setSpeed((int) data_buffer[S_MRS]);
+    left_motor.move((int) data_buffer[S_ML]);
+    right_motor.move((int) data_buffer[S_MR]);
+    
     Serial.print("LEFT RF:");
     Serial.println(data_buffer[S_IRL]);
     

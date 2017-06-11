@@ -11,9 +11,12 @@ public:
 	void stop();
 	void setSpeed(int);
 	int getSpeed();
+	void move(int);
+	int getStatus();
 private:
 	int m_pin1;
 	int m_pin2;
 	int m_speed_pin;
 	int m_speed;
+	int m_status;
 };
